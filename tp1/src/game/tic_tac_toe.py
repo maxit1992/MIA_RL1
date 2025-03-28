@@ -45,7 +45,7 @@ class TicTacToe:
             self.player1.start()
         while not (self.board.is_full()):
             if player2_turn:
-                pos_x, pos_y = self.player2.turn(self.board)
+                pos_x, pos_y = self.player_play(self.player2)
                 self.board.place_symbol(self.SYMBOL_PLAYER2, pos_x, pos_y)
                 self.board.print()
                 if self.board.is_winner(self.SYMBOL_PLAYER2):
@@ -53,7 +53,7 @@ class TicTacToe:
                     self.player1.loose()
                     return
             else:
-                pos_x, pos_y = self.player1.turn(self.board)
+                pos_x, pos_y = self.player_play(self.player1)
                 self.board.place_symbol(self.SYMBOL_PLAYER1, pos_x, pos_y)
                 self.board.print()
                 if self.board.is_winner(self.SYMBOL_PLAYER1):
@@ -63,3 +63,15 @@ class TicTacToe:
             player2_turn = not player2_turn
         self.player1.draw()
         self.player2.draw()
+
+    def player_play(self, player: Player):
+        """
+        Handle the player's turn. Get the player's move and check the validity.
+        """
+        pos_x, pos_y = -1, -1
+        empty_spots = self.board.get_empty_spots()
+        while (pos_x, pos_y) not in empty_spots:
+            pos_x, pos_y = player.turn(self.board)
+            if (pos_x, pos_y) not in empty_spots:
+                player.invalid_position()
+        return pos_x, pos_y

@@ -17,14 +17,26 @@ class Player(ABC):
         pass
 
     @abstractmethod
-    def turn(self, board: Board):
+    def turn(self, board: Board) -> (int, int):
         """
-        Method called to handle the player's turn.
+        Method called to handle the player's turn and return the position to place the symbol.
 
         Parameters
         ----------
         board : Board
             The current state of the game board.
+
+        Returns
+        -------
+        tuple
+            The (x, y) coordinates of the new symbol position.
+        """
+        pass
+
+    @abstractmethod
+    def invalid_position(self):
+        """
+        Method called whenever the player turn returned an invalid position.
         """
         pass
 
@@ -61,7 +73,7 @@ class UserPlayer(Player):
         """
         print("User starts")
 
-    def turn(self, board: Board):
+    def turn(self, board: Board) -> (int, int):
         """
         Prompts the user to pick a position on the board and returns the coordinates.
 
@@ -75,14 +87,16 @@ class UserPlayer(Player):
         tuple
             The (x, y) coordinates of the chosen position.
         """
-        pos_x = -1
-        pos_y = -1
-        empty_slots = board.get_empty_spots()
-        while (pos_x, pos_y) not in empty_slots:
-            place = int(input("Pick a position:"))
-            pos_x = place % 3
-            pos_y = int(place / 3)
+        place = int(input("Pick a position:"))
+        pos_x = place % 3
+        pos_y = int(place / 3)
         return pos_x, pos_y
+
+    def invalid_position(self):
+        """
+        Prints a message indicating the user has chosen an invalid position.
+        """
+        print("Invalid position")
 
     def win(self):
         """
@@ -114,7 +128,7 @@ class BotPlayer(Player):
         """
         print("Bot starts")
 
-    def turn(self, board: Board):
+    def turn(self, board: Board) -> (int, int):
         """
         Randomly selects an empty spot on the board and returns the coordinates.
 
@@ -131,6 +145,12 @@ class BotPlayer(Player):
         empty_spot = board.get_empty_spots()
         pos_x, pos_y = empty_spot.pop(random.randrange(len(empty_spot)))
         return pos_x, pos_y
+
+    def invalid_position(self):
+        """
+        Bot shouldn't choose an invalid position, so this method raise an exception.
+        """
+        raise ValueError("Bot choose an invalid position")
 
     def win(self):
         """

@@ -10,6 +10,7 @@ def create_mock_player():
     player = Mock()
     player.start = Mock()
     player.turn = Mock()
+    player.invalid_position = Mock()
     player.win = Mock()
     player.loose = Mock()
     player.draw = Mock()
@@ -111,17 +112,43 @@ def test_start_after_player_turn_valid_move_updates_board():
     assert game.board.grid[0][0] == 'X'
 
 
+def test_start_after_player_turn_invalid_move_calls_invalid_turn():
+    # Given
+    game, mock_player1, _ = create_game()
+    game.SEED = 1
+    mock_player1.turn.side_effect = lambda board: (5, 0)
+    mock_player1.invalid_position.side_effect = Exception("Exit")
+    # When
+    with pytest.raises(Exception, match="Exit"):
+        game.start()
+    # Then
+    mock_player1.invalid_position.assert_called_once()
+
+
 def test_start_after_player_turn_invalid_move_does_not_update_board():
+    # Given
+    game, mock_player1, _ = create_game()
+    game.SEED = 1
+    mock_player1.turn.side_effect = lambda board: (5, 0)
+    mock_player1.invalid_position.side_effect = Exception("Exit")
+    # When
+    with pytest.raises(Exception, match="Exit"):
+        game.start()
+    # Then
+    assert len(game.board.get_empty_spots()) == 9
+
+
+def test_start_after_player_turn_invalid_move_and_then_valid_move_update_board():
     # Given
     game, mock_player1, mock_player2 = create_game()
     game.SEED = 1
-    mock_player1.turn.side_effect = lambda board: (5, 0)
+    mock_player1.turn.side_effect = [(5, 0), (1, 0)]
     mock_player2.turn.side_effect = Exception("Exit")
     # When
     with pytest.raises(Exception, match="Exit"):
         game.start()
     # Then
-    assert game.board.grid[0][0] == ' '
+    assert game.board.grid[0][1] == 'X'
 
 
 def test_start_player1_turn_win_call_player1_win_and_call_player2_loose():

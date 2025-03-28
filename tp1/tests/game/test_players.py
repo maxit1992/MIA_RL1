@@ -36,6 +36,14 @@ def test_user_player_turn_valid_input(monkeypatch, user_player, board):
     assert (x, y) == (0, 0)
 
 
+def test_user_player_invalid_position_prints_message(capsys, user_player):
+    # When
+    user_player.invalid_position()
+    # Then
+    captured = capsys.readouterr()
+    assert captured.out != ""
+
+
 def test_user_player_win_prints_message(capsys, user_player):
     # When
     user_player.win()
@@ -73,6 +81,14 @@ def test_bot_player_turn_valid_input(bot_player, board):
     x, y = bot_player.turn(board)
     # Then
     assert (x, y) in board.get_empty_spots()
+
+
+def test_bot_invalid_position_raise_error(bot_player):
+    # When
+    with pytest.raises(ValueError) as exc:
+        bot_player.invalid_position()
+    # Then
+    assert str(exc.value) != ""
 
 
 def test_bot_player_win_prints_message(capsys, bot_player):
