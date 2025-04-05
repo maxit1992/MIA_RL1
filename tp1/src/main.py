@@ -83,7 +83,7 @@ def main():
     args = docopt(__doc__)
     if args['play']:
         play(args)
-    if args['train']:
+    elif args['train']:
         train(args)
     else:
         print("Invalid command. Use --help for usage information.")

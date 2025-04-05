@@ -1,3 +1,5 @@
+import random
+
 import pytest
 
 from src.game.board import Board
@@ -31,6 +33,25 @@ def test_turn_play_returns_policy_position(monte_carlo, board):
     # Given
     board.place_symbol("X", 1, 0)
     monte_carlo.policy = {" X       ": 5}
+    # When
+    pos_x, pos_y = monte_carlo.turn(board)
+    # Then
+    assert (pos_x, pos_y) == (2, 1)
+
+
+def test_turn_train_first_movement_returns_random(monte_carlo, board):
+    # Given
+    monte_carlo.set_train(True)
+    random.seed(47)
+    # When
+    pos_x, pos_y = monte_carlo.turn(board)
+    # Then
+    assert (pos_x, pos_y) == (2, 1)
+
+def test_turn_train_second_movement_returns_policy_position(monte_carlo, board):
+    # Given
+    monte_carlo.set_train(True)
+    random.seed(47)
     # When
     pos_x, pos_y = monte_carlo.turn(board)
     # Then
