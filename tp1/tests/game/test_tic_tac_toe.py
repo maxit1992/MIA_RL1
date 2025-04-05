@@ -191,3 +191,15 @@ def test_start_after_board_is_full_player1_draw_player2_draw():
     # Then
     mock_player1.draw.assert_called_once()
     mock_player2.draw.assert_called_once()
+
+def test_random_board_board_not_empty():
+    # Given
+    game, _, _ = create_game()
+    game.SEED = 1
+    # When
+    game.random_board()
+    # Then
+    empty_spots = game.board.get_empty_spots()
+    assert len(empty_spots) < 9
+    assert not game.board.is_winner(game.SYMBOL_PLAYER1)
+    assert not game.board.is_winner(game.SYMBOL_PLAYER2)

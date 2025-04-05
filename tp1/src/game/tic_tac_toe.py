@@ -1,7 +1,28 @@
+import os
 import random
+import sys
 
 from .board import Board
 from .players import Player
+
+
+class _PrintWrapper:
+    """
+    Wrapper to hide print statements.
+    """
+
+    def __init__(self, hidden: bool = False):
+        self.hidden = hidden
+
+    def __enter__(self):
+        if self.hidden:
+            self._original_stdout = sys.stdout
+            sys.stdout = open(os.devnull, 'w')
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.hidden:
+            sys.stdout.close()
+            sys.stdout = self._original_stdout
 
 
 class TicTacToe:
@@ -13,7 +34,7 @@ class TicTacToe:
     SYMBOL_PLAYER2 = "O"
     SEED = None
 
-    def __init__(self, player1: Player, player2: Player, board: Board = Board()):
+    def __init__(self, player1: Player, player2: Player, board: Board = Board(), hidden_print: bool = False):
         """
         Constructs all the necessary attributes for the Tic Tac Toe game.
 
@@ -25,44 +46,48 @@ class TicTacToe:
             The second player.
         board : Board, optional
             The game board. A new default Board is created if not given.
+        hidden_print : bool, optional
+            If True, suppresses print statements.
         """
         self.board = board
         self.player1 = player1
         self.player2 = player2
+        self.hidden_print = hidden_print
 
     def start(self):
         """
         Starts a new game of Tic Tac Toe. Randomly selects which player starts first.
         Alternates turns between players until the board is full or a player wins.
         """
-        if self.SEED:
-            random.seed(self.SEED)
-        print("New Game")
-        player2_turn = random.randrange(0, 99, 1) >= 50
-        if player2_turn:
-            self.player2.start()
-        else:
-            self.player1.start()
-        while not (self.board.is_full()):
+        with _PrintWrapper(self.hidden_print):
+            if self.SEED:
+                random.seed(self.SEED)
+            print("New Game")
+            player2_turn = random.choice([False, True])
             if player2_turn:
-                pos_x, pos_y = self.player_play(self.player2)
-                self.board.place_symbol(self.SYMBOL_PLAYER2, pos_x, pos_y)
-                self.board.print()
-                if self.board.is_winner(self.SYMBOL_PLAYER2):
-                    self.player2.win()
-                    self.player1.loose()
-                    return
+                self.player2.start()
             else:
-                pos_x, pos_y = self.player_play(self.player1)
-                self.board.place_symbol(self.SYMBOL_PLAYER1, pos_x, pos_y)
-                self.board.print()
-                if self.board.is_winner(self.SYMBOL_PLAYER1):
-                    self.player1.win()
-                    self.player2.loose()
-                    return
-            player2_turn = not player2_turn
-        self.player1.draw()
-        self.player2.draw()
+                self.player1.start()
+            while not (self.board.is_full()):
+                if player2_turn:
+                    pos_x, pos_y = self.player_play(self.player2)
+                    self.board.place_symbol(self.SYMBOL_PLAYER2, pos_x, pos_y)
+                    self.board.print()
+                    if self.board.is_winner(self.SYMBOL_PLAYER2):
+                        self.player2.win()
+                        self.player1.loose()
+                        return
+                else:
+                    pos_x, pos_y = self.player_play(self.player1)
+                    self.board.place_symbol(self.SYMBOL_PLAYER1, pos_x, pos_y)
+                    self.board.print()
+                    if self.board.is_winner(self.SYMBOL_PLAYER1):
+                        self.player1.win()
+                        self.player2.loose()
+                        return
+                player2_turn = not player2_turn
+            self.player1.draw()
+            self.player2.draw()
 
     def player_play(self, player: Player):
         """
@@ -75,3 +100,19 @@ class TicTacToe:
             if (pos_x, pos_y) not in empty_spots:
                 player.invalid_position()
         return pos_x, pos_y
+
+    def random_board(self):
+        """
+        Generates a random board state for Tic Tac Toe.
+        """
+        player2_turn = random.choice([True, False])
+        while True:
+            self.board = Board()
+            for _ in range(0, random.randrange(0, 9)):
+                empty_spots = self.board.get_empty_spots()
+                pos_x, pos_y = empty_spots.pop(random.randrange(len(empty_spots)))
+                symbol = self.SYMBOL_PLAYER2 if player2_turn else self.SYMBOL_PLAYER1
+                self.board.place_symbol(symbol, pos_x, pos_y)
+                player2_turn = not player2_turn
+            if not self.board.is_winner(self.SYMBOL_PLAYER2) and not self.board.is_winner(self.SYMBOL_PLAYER1):
+                break
