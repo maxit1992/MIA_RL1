@@ -1,28 +1,7 @@
-import os
 import random
-import sys
 
 from .board import Board
 from .players import Player
-
-
-class _PrintWrapper:
-    """
-    Wrapper to hide print statements.
-    """
-
-    def __init__(self, hidden: bool = False):
-        self.hidden = hidden
-
-    def __enter__(self):
-        if self.hidden:
-            self._original_stdout = sys.stdout
-            sys.stdout = open(os.devnull, 'w')
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.hidden:
-            sys.stdout.close()
-            sys.stdout = self._original_stdout
 
 
 class TicTacToe:

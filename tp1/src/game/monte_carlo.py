@@ -69,15 +69,14 @@ class MonteCarloEsControl(Player):
         if not self.train:
             next_step = self.policy[index]
         else:
-            # Update rewards for the last step
-            if len(self.steps) > 0:
-                self.rewards.append(-0.1)
-
             # Check if we are over the limit of turns
-            if len(self.steps) > 20:
+            if len(self.steps) >= 20:
                 self.rewards.append(-50)
                 self._update_q_values_and_policy()
                 raise RuntimeWarning("No more moves left")
+            elif len(self.steps) > 0:
+                # Update rewards for the last step
+                self.rewards.append(-0.1)
 
             if len(self.steps) == 0:
                 # First movement is random to explore

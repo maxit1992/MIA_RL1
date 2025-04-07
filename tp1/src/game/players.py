@@ -14,7 +14,6 @@ class Player(ABC):
         """
         Method called whenever the player will make the first movement of the game.
         """
-        pass
 
     @abstractmethod
     def turn(self, board: Board) -> (int, int):
@@ -31,35 +30,30 @@ class Player(ABC):
         tuple
             The (x, y) coordinates of the new symbol position.
         """
-        pass
 
     @abstractmethod
     def invalid_position(self):
         """
         Method called whenever the player turn returned an invalid position.
         """
-        pass
 
     @abstractmethod
     def win(self):
         """
         Method called whenever the player wins.
         """
-        pass
 
     @abstractmethod
     def loose(self):
         """
         Method called whenever player looses.
         """
-        pass
 
     @abstractmethod
     def draw(self):
         """
         Method called whenever the player draws.
         """
-        pass
 
 
 class UserPlayer(Player):

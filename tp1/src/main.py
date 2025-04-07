@@ -65,7 +65,7 @@ def train(args: dict):
     bot_player = BotPlayer()
     for _ in tqdm(range(int(args['--episodes']))):
         try:
-            game = TicTacToe(bot_player, monte_carlo_player, hidden_print=True)
+            game = TicTacToe(bot_player, monte_carlo_player)
             game.random_board()
             game.start()
         except RuntimeWarning:

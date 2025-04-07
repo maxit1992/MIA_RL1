@@ -2,7 +2,7 @@
 
 ## Description
 
-In this TP, students are required to solve a problem using Q-Learning. My implementation is based on Tic Tac Toe game.
+In this TP, students are required to solve a problem using Monte Carlo. My implementation is based on Tic Tac Toe game.
 
 ## Requirements
 
@@ -27,12 +27,21 @@ In this TP, students are required to solve a problem using Q-Learning. My implem
 To start the game, run the following command:
 
 ```sh
-python src/main.py
+python src/main.py play --games=<number_of_games> [--bot] [--monte_carlo=<model_file>] [--human]
 ```
 
-By default, the game starts with a human player and a bot. The human player can enter the position where they want to
-place their symbol. The bot selects a random position on the board. The game continues until there is a winner or the
-board is full.
+The game starts between two of the three options: human player, a bot and a Monte Carlo model. The human player can
+enter the position where they want to place their symbol. The bot selects a random position on the board and the Monte
+Carlo model plays according to the strategies it learnt. The game continues until there is a winner or the board is
+full. Multiple consecutive games can be played using the `--games` option.
+
+## Training the Monte Carlo Model
+
+To train the Monte Carlo model, run the following command:
+
+```sh
+python src/main.py train --episodes=<number_of_episodes>
+```
 
 ## Running Tests
 

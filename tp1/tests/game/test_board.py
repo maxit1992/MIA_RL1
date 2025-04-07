@@ -88,6 +88,15 @@ def test_is_winner_diagonal_win_returns_true(board):
     # Then
     assert result == True
 
+def test_is_winner_inverse_diagonal_win_returns_true(board):
+    # Given
+    board.place_symbol('X', 0, 2)
+    board.place_symbol('X', 1, 1)
+    board.place_symbol('X', 2, 0)
+    # When
+    result = board.is_winner('X')
+    # Then
+    assert result == True
 
 def test_is_full_empty_board_returns_false(board):
     # When
