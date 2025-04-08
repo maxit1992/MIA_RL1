@@ -84,7 +84,7 @@ def test_turn_train_second_movement_updates_reward(monte_carlo, board):
     board.place_symbol("X", 0, 0)
     monte_carlo.policy = {"X        ": 8}
     # When
-    pos_x, pos_y = monte_carlo.turn(board)
+    monte_carlo.turn(board)
     # Then
     assert monte_carlo.rewards == [-0.1]
 
