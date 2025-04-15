@@ -1,4 +1,6 @@
 pytest
+pytest-mock
 coverage
 docopt
 tqdm
+matplotlib

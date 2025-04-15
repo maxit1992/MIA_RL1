@@ -16,7 +16,10 @@ Options:
     --monte_carlo=<model_file>      Play against a trained Monte Carlo model.
 """
 
+import os
 import pickle
+import sys
+from contextlib import contextmanager
 from datetime import datetime
 
 from docopt import docopt
@@ -26,6 +29,20 @@ from game.board import Board
 from game.monte_carlo import MonteCarloEsControl
 from game.players import BotPlayer, UserPlayer
 from game.tic_tac_toe import TicTacToe
+
+
+@contextmanager
+def suppress_stdout():
+    """
+    Context manager to suppress standard output.
+    """
+    with open(os.devnull, 'w') as devnull:
+        old_stdout = sys.stdout
+        sys.stdout = devnull
+        try:
+            yield
+        finally:
+            sys.stdout = old_stdout
 
 
 def play(args: dict):
@@ -63,14 +80,25 @@ def train(args: dict):
     monte_carlo_player = MonteCarloEsControl()
     monte_carlo_player.set_train(True)
     bot_player = BotPlayer()
-    for _ in tqdm(range(int(args['--episodes']))):
+    total_episodes = int(args['--episodes'])
+    update_episodes = int(total_episodes / 100)
+    pbar = tqdm(range(total_episodes))
+    for episode in pbar:
         try:
-            game = TicTacToe(bot_player, monte_carlo_player)
-            game.random_board()
-            game.start()
+            with suppress_stdout():  # Suppress console output
+                game = TicTacToe(bot_player, monte_carlo_player)
+                game.random_board()
+                game.start()
+            if episode % update_episodes == 0:
+                pbar.set_description(f"Episode {episode} |"
+                                     f" Average reward: {monte_carlo_player.get_average_reward(episodes=update_episodes)} |"
+                                     f" Average success rate: {monte_carlo_player.get_success_rate(episodes=update_episodes)}")
         except RuntimeWarning:
             pass
     monte_carlo_player.set_train(False)
+    # Plot the training results
+    monte_carlo_player.plot_rewards(episodes=100)
+    monte_carlo_player.plot_success_rate(episodes=100)
     with open('monte_carlo-' + datetime.now().strftime('%Y_%m_%d-%H_%M_%S') + '.pkl', 'wb') as file:
         # noinspection PyTypeChecker
         pickle.dump(monte_carlo_player, file)
