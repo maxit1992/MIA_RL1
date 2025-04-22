@@ -16,17 +16,46 @@ def monte_carlo():
     return MonteCarloEsControl()
 
 
-def test_start_resets_episode(monte_carlo):
-    # Given
-    monte_carlo.episode = 5
-    monte_carlo.episode_steps = [(0, 0)]
-    monte_carlo.episode_rewards = [1]
+def test_start_player_start_prints_message(capsys, monte_carlo):
     # When
     monte_carlo.start()
     # Then
-    assert monte_carlo.episode == 6
+    captured = capsys.readouterr()
+    assert captured.out != ""
+
+
+def test_new_game_train_resets_episode(monte_carlo):
+    # Given
+    monte_carlo.set_train(True)
+    monte_carlo.episode_steps = [(0, 0)]
+    monte_carlo.episode_rewards = [1]
+    # When
+    monte_carlo.new_game()
+    # Then
     assert monte_carlo.episode_steps == []
     assert monte_carlo.episode_rewards == []
+
+
+def test_new_game_not_train_does_not_reset_episode(monte_carlo):
+    # Given
+    monte_carlo.set_train(False)
+    monte_carlo.episode_steps = [(0, 0)]
+    monte_carlo.episode_rewards = [1]
+    # When
+    monte_carlo.new_game()
+    # Then
+    assert monte_carlo.episode_steps == [(0, 0)]
+    assert monte_carlo.episode_rewards == [1]
+
+
+def test_new_game_prints_message(capsys, monte_carlo):
+    # Given
+    monte_carlo.set_train(False)
+    # When
+    monte_carlo.new_game()
+    # Then
+    captured = capsys.readouterr()
+    assert captured.out != ""
 
 
 def test_turn_play_returns_policy_position(monte_carlo, board):

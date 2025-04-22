@@ -2,12 +2,19 @@ import random
 from abc import ABC, abstractmethod
 
 from .board import Board
+from .utils import pos_to_xy
 
 
 class Player(ABC):
     """
     An abstract base class to represent a player in the Tic Tac Toe game.
     """
+
+    @abstractmethod
+    def new_game(self):
+        """
+        Method called whenever a new game start.
+        """
 
     @abstractmethod
     def start(self):
@@ -61,6 +68,12 @@ class UserPlayer(Player):
     A class to represent a human player in the Tic Tac Toe game.
     """
 
+    def new_game(self):
+        """
+        Prints a message indicating the user starts a new game.
+        """
+        print("User participates in a new game")
+
     def start(self):
         """
         Prints a message indicating the user starts the game.
@@ -82,9 +95,7 @@ class UserPlayer(Player):
             The (x, y) coordinates of the chosen position.
         """
         place = int(input("Pick a position:"))
-        pos_x = place % 3
-        pos_y = int(place / 3)
-        return pos_x, pos_y
+        return pos_to_xy(place)
 
     def invalid_position(self):
         """
@@ -115,6 +126,12 @@ class BotPlayer(Player):
     """
     A class to represent a bot player in the Tic Tac Toe game.
     """
+
+    def new_game(self):
+        """
+        Prints a message indicating the random bot starts a new game.
+        """
+        print("Bot participates in a new game")
 
     def start(self):
         """

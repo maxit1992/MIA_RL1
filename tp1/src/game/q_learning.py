@@ -2,45 +2,51 @@ import random
 
 import matplotlib.pyplot as plt
 
+from .utils import pos_to_xy, xy_to_pos, board_to_index
 from .board import Board
 from .players import Player
-from .utils import pos_to_xy, xy_to_pos, board_to_index
 
-class MonteCarloEsControl(Player):
+
+class QLearning(Player):
     """
-    Monte Carlo Es Control player for Tic Tac Toe.
-    This player uses Monte Carlo methods to learn and improve its strategy over time.
+    Q-Learning player for Tic Tac Toe.
+    This player uses Q-Learning methods to learn and improve its strategy over time.
     """
 
     def __init__(self):
         """
-        Initializes the Monte Carlo Es Control player.
+        Initializes the Q-Learning player.
         """
+        self.alpha = 0.1
+        self.epsilon = 0.2
+        self.gamma = 0.9
+        self.train = False
         self.q_values = {}
-        self.policy = {}
-        self.returns_sum = {}
-        self.return_count = {}
-        self.episode_steps = []
-        self.episode_rewards = []
+        self.last_state = None
+        self.last_action = None
+        self.n_steps = 0
+        self.episode_reward = 0
         self.train_results = []
         self.train_rewards = []
-        self.train = False
 
     def new_game(self):
         """
-        Prints a message indicating monte carlo is participating in a new game.
+        Prints a message indicating q-learning is participating in a new game.
         If the mode is training, it initializes the episode steps and rewards.
+        :return:
         """
-        print("Monte Carlo participates in a new game")
+        print("Q-Learning participates in a new game")
         if self.train:
-            self.episode_steps = []
-            self.episode_rewards = []
+            self.n_steps = 0
+            self.episode_reward = 0
+            self.last_state = None
+            self.last_action = None
 
     def start(self):
         """
-        Prints a message indicating monte carlo starts the game.
+        Prints a message indicating q-learning starts the game.
         """
-        print("Monte Carlo starts")
+        print("Q-Learning starts")
 
     def turn(self, board: Board) -> (int, int):
         """
@@ -58,75 +64,94 @@ class MonteCarloEsControl(Player):
         """
         index = board_to_index(board)
         if not self.train:
-            next_step = self.policy[index]
+            next_step = max(self.q_values[index], key=self.q_values[index].get)
         else:
+            # Check if Q-values are initialized for the current state
+            if index not in self.q_values:
+                self.q_values[index] = {i: 0 for i in range(9)}
             # Check if we are over the limit of turns
-            if len(self.episode_steps) >= 20:
-                self.episode_rewards.append(-50)
+            if self.n_steps >= 20:
                 self.train_results.append('I')
-                self._update_q_values_and_policy()
+                reward = -50
+                self.episode_reward += reward
+                self._update_q_values(self.last_state, self.last_action, reward, 0)
+                self.train_rewards.append(self.episode_reward)
                 raise RuntimeWarning("No more moves left")
-            elif len(self.episode_steps) > 0:
-                # Update rewards for the last step
-                self.episode_rewards.append(-0.1)
+            elif self.n_steps > 0:
+                # Update last step rewards
+                reward = -0.1
+                self.episode_reward += reward
+                actual_max_q_value = max(self.q_values[index].values())
+                self._update_q_values(self.last_state, self.last_action, reward, actual_max_q_value)
 
-            if len(self.episode_steps) == 0:
-                # First movement is random to explore
-                next_step = random.randint(0, 9)
-            elif index not in self.policy:
-                # If movement is not defined we define one
+            # Choose the next step
+            if random.random() < self.epsilon:
+                # Explore: choose a random action
                 empty_spot = board.get_empty_spots()
                 next_step_x, next_step_y = empty_spot.pop(random.randrange(len(empty_spot)))
                 next_step = xy_to_pos(next_step_x, next_step_y)
-                self.policy[index] = next_step
             else:
-                next_step = self.policy[index]
-            self.episode_steps.append((index, next_step))
+                # Exploit: choose the best action based on Q-values
+                if index not in self.q_values:
+                    empty_spot = board.get_empty_spots()
+                    next_step_x, next_step_y = empty_spot.pop(random.randrange(len(empty_spot)))
+                    next_step = xy_to_pos(next_step_x, next_step_y)
+                else:
+                    next_step = max(self.q_values[index], key=self.q_values[index].get)
+            self.last_state = index
+            self.last_action = next_step
+            self.n_steps += 1
 
         return pos_to_xy(next_step)
 
     def invalid_position(self):
         """
-        Prints a message indicating monte carlo has chosen an invalid position.
+        Prints a message indicating q-learning has chosen an invalid position.
         """
-        print("MonteCarlo choose an invalid position")
+        print("Q-Learning choose an invalid position")
 
     def win(self):
         """
-        Prints a message indicating monte carlo has won.
+        Prints a message indicating q-learning has won.
         Updates the rewards and Q-values if in training mode.
         """
-        print("MonteCarlo Wins")
+        print("Q-Learning Wins")
         if self.train:
-            self.episode_rewards.append(10)
+            reward = 10
+            self.episode_reward += reward
+            self._update_q_values(self.last_state, self.last_action, reward, 0)
+            self.train_rewards.append(self.episode_reward)
             self.train_results.append('W')
-            self._update_q_values_and_policy()
 
     def loose(self):
         """
-        Prints a message indicating monte carlo has lost.
+        Prints a message indicating q-learning has lost.
         Updates the rewards and Q-values if in training mode.
         """
-        print("MonteCarlo Loose")
+        print("Q-Learning Loose")
         if self.train:
-            self.episode_rewards.append(-10)
+            reward = -10
+            self.episode_reward += reward
+            self._update_q_values(self.last_state, self.last_action, reward, 0)
+            self.train_rewards.append(self.episode_reward)
             self.train_results.append('L')
-            self._update_q_values_and_policy()
 
     def draw(self):
         """
-        Prints a message indicating monte carlo has drawn.
+        Prints a message indicating q-learning has drawn.
         Updates the rewards and Q-values if in training mode.
         """
-        print("MonteCarlo Draw")
+        print("Q-Learning Draw")
         if self.train:
-            self.episode_rewards.append(-2)
+            reward = -2
+            self.episode_reward += reward
+            self._update_q_values(self.last_state, self.last_action, reward, 0)
+            self.train_rewards.append(self.episode_reward)
             self.train_results.append('D')
-            self._update_q_values_and_policy()
 
     def set_train(self, train: bool):
         """
-        Set the training mode for monte carlo.
+        Set the training mode for q-learning.
         """
         self.train = train
 
@@ -212,23 +237,7 @@ class MonteCarloEsControl(Player):
         else:
             return sum([1 for result in self.train_results[-episodes:] if result == 'W']) / episodes
 
-    def _update_q_values_and_policy(self):
-        # Update the Q-values with the rewards of the episode
-        cumulative_reward = 0
-        while len(self.episode_steps) > 0:
-            index, action = self.episode_steps.pop()
-            cumulative_reward = self.episode_rewards.pop() + 0.9 * cumulative_reward
-            if (index, action) not in self.episode_steps:
-                if (index, action) not in self.returns_sum:
-                    self.returns_sum[(index, action)] = 0
-                    self.return_count[(index, action)] = 0
-                self.returns_sum[(index, action)] += cumulative_reward
-                self.return_count[(index, action)] += 1
-                if index not in self.q_values:
-                    self.q_values[index] = {}
-                self.q_values[index][action] = self.returns_sum[(index, action)] / self.return_count[(index, action)]
-        self.train_rewards.append(cumulative_reward)
-        # Update the policy with the new best action
-        for index in self.q_values.keys():
-            best_action = max(self.q_values[index], key=self.q_values[index].get)
-            self.policy[index] = best_action
+    def _update_q_values(self, last_state: str, last_action: int, reward: float, max_q_value: float):
+        self.q_values[last_state][last_action] = (
+                self.q_values[last_state][last_action] +
+                self.alpha * (reward + self.gamma * max_q_value - self.q_values[last_state][last_action]))

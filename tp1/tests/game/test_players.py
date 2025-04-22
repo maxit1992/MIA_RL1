@@ -19,6 +19,13 @@ def bot_player():
     return BotPlayer()
 
 
+def test_user_player_new_game_prints_message(capsys, user_player):
+    # When
+    user_player.new_game()
+    # Then
+    captured = capsys.readouterr()
+    assert captured.out != ""
+
 def test_user_player_start_prints_message(capsys, user_player):
     # When
     user_player.start()
@@ -67,6 +74,12 @@ def test_user_player_draw_prints_message(capsys, user_player):
     captured = capsys.readouterr()
     assert captured.out != ""
 
+def test_bot_player_new_game_prints_message(capsys, bot_player):
+    # When
+    bot_player.new_game()
+    # Then
+    captured = capsys.readouterr()
+    assert captured.out != ""
 
 def test_bot_player_start_prints_message(capsys, bot_player):
     # When

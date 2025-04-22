@@ -35,6 +35,8 @@ class TicTacToe:
         Alternates turns between players until the board is full or a player wins.
         """
         print("New Game")
+        self.player1.new_game()
+        self.player2.new_game()
         player2_turn = random.choice([False, True])
         if player2_turn:
             self.player2.start()
