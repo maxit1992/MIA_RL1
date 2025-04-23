@@ -77,9 +77,21 @@ def test_turn_play_returns_best_q_value_position(q_learning, board):
     assert (pos_x, pos_y) == (2, 1)
 
 
-def test_turn_train_explores_random_position(q_learning, board):
+def test_turn_train_epsilon_explores_return_random_position(q_learning, board):
     # Given
     q_learning.set_train(True)
+    q_learning.q_values = {"         ": {0: 100.0}}
+    random.seed(1)
+    # When
+    pos_x, pos_y = q_learning.turn(board)
+    # Then
+    assert (pos_x, pos_y) == (1, 0)
+
+
+def test_turn_train_epsilon_exploit_return_best_position(q_learning, board):
+    # Given
+    q_learning.set_train(True)
+    q_learning.q_values = {"         ": {5: 100.0}}
     random.seed(47)
     # When
     pos_x, pos_y = q_learning.turn(board)
@@ -91,15 +103,16 @@ def test_turn_train_updates_q_values(q_learning, board):
     # Given
     q_learning.set_train(True)
     random.seed(47)
-    q_learning.last_state = "state"
-    q_learning.last_action = 0
-    q_learning.q_values = {"state": {0: 0.5}}
-    q_learning.episode_reward = 0
     board.place_symbol("X", 0, 0)
+    q_learning.last_state = "X        "
+    q_learning.last_action = 0
+    q_learning.q_values = {"X        ": {0: 0.5}}
+    q_learning.episode_reward = 15
+    q_learning.n_steps = 1
     # When
     q_learning.turn(board)
     # Then
-    assert q_learning.q_values["state"][0] != 0.5
+    assert q_learning.q_values["X        "][0] != 0.5
 
 
 def test_invalid_position_prints_message(capsys, q_learning):
@@ -220,4 +233,8 @@ def test_get_success_rate(q_learning):
 def test_plot_success_rate(q_learning, mocker):
     # Given
     q_learning.train_results = ['W', 'L', 'W', 'D', 'W']
-    q_learning.episode_reward = 0
+    mock_show = mocker.patch("matplotlib.pyplot.show")
+    # When
+    q_learning.plot_success_rate(episodes=3)
+    # Then
+    mock_show.assert_called_once()

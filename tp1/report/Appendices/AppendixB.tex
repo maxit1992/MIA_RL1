@@ -4,7 +4,7 @@
 
 \label{Cobertura y calidad de código}
 
-Dada la complejidad del entorno, los agentes y el algoritmo de Monte Carlo ES, se implementaron test unitarios de las diferentes clases a fin de verificar el comportamiento de los diferentes métodos. Estos test se pueden ejecutar mediante el comando:
+Dada la complejidad del entorno, los agentes y los algoritmos de Monte Carlo ES y Q-Learning, se implementaron test unitarios de las diferentes clases a fin de verificar el comportamiento de los diferentes métodos. Estos test se pueden ejecutar mediante el comando:
 
 \begin{verbatim}
 $ pytest
@@ -24,12 +24,12 @@ $ coverage report
 	\label{fig:coverage}
 \end{figure}
 
-Para mantener una buena calidad de código se ejecutaron análisis estáticos mediante la herramienta SonarLint y se resolvieron las malas prácticas y los problemas de seguridad encontrados.
+Para mantener una buena calidad de código, el repositorio cuenta con documentación extensiva y un archivo README.md donde se detalla el uso del proyecto. Adicionalmente se ejecutaron análisis estáticos de calidad de código mediante la herramienta SonarLint y se resolvieron las malas prácticas y los problemas de seguridad encontrados.
 
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=\textwidth]{./Figures/sonar.png}
 	\caption{Análisis estático de código.}
-	\label{fig:coverage}
+	\label{fig:sonar}
 \end{figure}
 

@@ -22,11 +22,11 @@
 %----------------------------------------------------------------------------------------
 \section{Introducción}
 
-En el presente trabajo práctico, se desarrolla la implementación del algoritmo Monte Carlo ES en un modelo que, luego de ser entrenado, es capaz de jugar al tres en linea. El objetivo es poder evaluar la implementación del algoritmo, sus beneficios y defectos, y también su rendimiento en un juego simple y reducido.
+En el presente trabajo práctico, se desarrolla la implementación de los  algoritmos Monte Carlo ES y Q-Learning en dos modelos que, luego de ser entrenado, son capaces de jugar al tres en linea. El objetivo es poder evaluar la implementación de los algoritmo y compararlos, en sus beneficios y defectos, y en su rendimiento en un juego simple y reducido.
 
-Para lograrlo, se implementaron en lenguaje Python las clases \textit{Board}, y \textit{TicTacToe} que modelan el tablero y las reglas de juego respectivamente (entorno) ,y la clase abstracta \textit{Player} que da soporte a las operaciones de los posibles jugadores (agentes). Heredando de \textit{Player}, se crearon las clases \textit{UserPlayer}, \textit{BotPlayer} y  \textit{MonteCarloEsControl} que permiten jugadores humanos, bots aleatorios y bots guiados por el algoritmo de Monte Carlo ES respectivamente.
+Para lograrlo, se implementaron en lenguaje Python las clases \textit{Board}, y \textit{TicTacToe} que modelan el tablero y las reglas de juego respectivamente (entorno), y la clase abstracta \textit{Player} que da soporte a las operaciones de los posibles jugadores (agentes). Heredando de \textit{Player}, se crearon las clases \textit{UserPlayer}, \textit{BotPlayer},  \textit{MonteCarloEsControl} y \textit{QLearning}  que permiten jugadores humanos, bots aleatorios, modelos guiados por el algoritmo de Monte Carlo ES y modelos guiados por el algoritmo de Q-Learning respectivamente.
 
-Un script principal facilita la ejecución de los casos de uso principales: comenzar un juego entre 2 jugadores o entrenar un agente de Monte Carlo.
+Un script principal facilita la ejecución de los casos de uso principales: comenzar un juego entre 2 jugadores o entrenar un modelo utilizando uno de los 2 algoritmos disponibles.
 
 \section{Entorno}
 
@@ -59,20 +59,22 @@ Cuando  un jugador es humano y le llega su turno, este debe introducir por tecla
 	\label{fig:human_board}
 \end{figure}
 
-El bot aleatorio elige, en forma automática y aleatoria, cualquier posición disponible en el tablero. Este no sigue ninguna estrategia y resulta útil únicamente para probar el juego y para realizar el entrenamiento del agente de Monte Carlo.
+El bot aleatorio elige, en forma automática y aleatoria, cualquier posición disponible en el tablero. Este no sigue ninguna estrategia y resulta útil únicamente para probar el juego y para realizar el entrenamiento de los modelos disponibles.
 
-El agente de Monte Carlo realiza movimientos en forma automática siguiendo una política aprendida. En cada turno observa el estado actual del tablero, y toma la acción que se evaluó como mejor opción para ese estado durante el entrenamiento.
+Los agentes con modelos entrenables realizan movimientos en forma automática siguiendo una política aprendida. En cada turno observan el estado actual del tablero, y toman la acción que se evaluó como mejor opción para ese estado durante el entrenamiento.
 
 \section{Entrenamiento}
 
-Para entrenar el agente de Monte Carlo, se ejecutaron múltiples juegos consecutivos de tres en línea donde participaban el agente en entrenamiento y bots aleatorios. Dentro del agente de Monte Carlo se implementó el algoritmo de la figura \ref{fig:algorithm}, con los siguientes detalles:
+\subsection{Monte Carlo ES}
+
+Para entrenar el agente de Monte Carlo ES, se ejecutaron múltiples juegos consecutivos de tres en línea donde participaban el agente en entrenamiento y bots aleatorios. Dentro del agente de Monte Carlo ES se implementó el algoritmo de la figura \ref{fig:algorithm_monte_carlo}, con los siguientes detalles:
 \begin{itemize}
-    \item \(A(s)\) contiene las acciones posibles que son jugar las posiciones del 0 al 8.
+    \item \(A(s)\) contiene las acciones posibles, que son jugar las posiciones del 0 al 8.
     \item S contiene los estados posibles del tablero. El tablero de tres en línea tiene en total \(3^9 = 19.683\) estados diferentes, la mayoría de los cuales son ilegales.
-    \item  Dado que resulta costoso generar las políticas para todos los estados del tablero y también filtrar solo los estados posibles (alrededor de 5.478), se decidió comenzar con \(\pi(s)\) y \(Q(s,a)\) vacíos e inicializarlos en forma aleatoria a medida que el agente se encontraba con estados que nunca había visto antes.
+    \item  Dado que resulta costoso generar las políticas iniciales aleatorias para todos los estados del tablero y también filtrar solo los estados posibles (alrededor de 5.478), se decidió comenzar con \(\pi(s)\) y \(Q(s,a)\) vacíos e inicializarlos en forma aleatoria a medida que el agente se encontraba con estados que nunca había visto antes.
     \item Para el comienzo exploratorio de Monte Carlo, se ejecutaron en el tablero un número aleatorio de jugadas aleatorias alternadas entre jugador 1 y 2 previo a comenzar el episodio. Cabe destacar que se realizó un chequeo del estado del tablero luego de estas inicializaciones para verificar la validez.
     \item Como recompensa se asignó -0.1 por cada jugada que no concluyera en el final del juego, -10 a una jugada perdedora, -2 a una jugada de empate y 10 a una jugada ganadora.
-    \item Adicionalmente se limito el número de jugadas del agente en 20 y se agrego una penalización de -50 si se supera este valor. De esta forma se prioriza que aprenda a jugar posiciones válidas.
+    \item Adicionalmente se limito el número de jugadas del agente en 20 y se agrego una penalización de -50 si se supera este valor. De esta forma se prioriza aprender a jugar posiciones válidas.
     \item Se fijo un factor de descuento de 0.9.
     \item El entrenamiento se repitió durante 500.000 episodios, demorando aproximadamente una hora.
     \item Los valores anteriores se obtuvieron en forma empírica, a partir de varios entrenamientos y analizando los resultados obtenidos.
@@ -80,14 +82,56 @@ Para entrenar el agente de Monte Carlo, se ejecutaron múltiples juegos consecut
 
 \begin{figure}[htbp]
 	\centering
-	\includegraphics[width=0.8\textwidth]{./Figures/algorithm.png}
+	\includegraphics[width=0.8\textwidth]{./Figures/algorithm_monte_carlo.png}
 	\caption{Algoritmo de Mote Carlo ES.}
-	\label{fig:algorithm}
+	\label{fig:algorithm_monte_carlo}
+\end{figure}
+
+\subsection{Q-Learning}
+
+Para entrenar el agente de Q-Learning, se ejecutaron múltiples juegos consecutivos de tres en línea donde participaban el agente en entrenamiento y bots aleatorios. Dentro del agente de Q-Learning se implementó el algoritmo de la figura \ref{fig:algorithm_q_learning}, con los siguientes detalles:
+\begin{itemize}
+    \item \(A(s)\) contiene las acciones posibles y S contiene los estados posibles del tablero, al igual que en el caso anterior.
+    \item  Q-Learning no necesita inicio aleatorio del estado del ambiente, por lo que los diferentes episodios de juego empezaron con el tablero vacío.
+    \item Las recompensas se mantuvieron como en el caso anterior: -0.1 por cada jugada que no concluyera en el final del juego, -10 a una jugada perdedora, -2 a una jugada de empate, 10 a una jugada ganadora y -50 por superar las 20 jugadas.
+    \item Se fijo un \(\alpha\) (tasa de aprendizaje) de 0.1, un \(\gamma\) (factor de descuento) de 0.9 y un \(\epsilon\) (factor de exploración) de 0.2.
+    \item El entrenamiento se repitió durante 500.000 episodios, demorando aproximadamente 5 minutos.
+\end{itemize} 
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.8\textwidth]{./Figures/algorithm_q_learning.png}
+	\caption{Algoritmo de Q-Learning.}
+	\label{fig:algorithm_q_learning}
 \end{figure}
 
 \section{Resultados}
 
-Luego de entrenar el agente Monte Carlo ES durante 500.000 episodios se obtuvo un modelo capaz de identificar las estrategias principales del tres en línea. Por ejemplo, si el agente comienza el juego, este toma siempre el centro del tablero como se observa en la figura \ref{fig:monte_carlo_center}. También, si el agente tiene posibilidad de ganar, toma la posición ganadora; o por el contrario, si el contrincante tiene posibilidad de ganar, el agente intenta bloquear esa posibilidad, como se observa en las figuras \ref{fig:monte_carlo_win} y \ref{fig:monte_carlo_block}.
+\subsection{Monte Carlo ES}
+
+Luego de entrenar el agente Monte Carlo ES se obtuvo la curva de recompensa de la figura \ref{fig:monte_carlo_episode_rewards}  y la curva de éxito (juegos ganados) de la figura \ref{fig:monte_carlo_success_rate}.
+
+En la figura \ref{fig:monte_carlo_episode_rewards} se observa que la media de la recompensa aumenta lentamente con el paso de los episodios desde un valor de 0 hasta aproximadamente 5, lo que nos indica que el modelo está entrenándose correctamente. También, observamos en la figura \ref{fig:monte_carlo_success_rate} que el modelo alcanza un porcentaje de juegos ganados de aproximadamente 0.7, es decir, el modelo gana el 70\% de las partidas contra un bot aleatorio, por lo que su política es mejor que elegir posiciones al azar.
+
+\clearpage
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{./Figures/monte_carlo_episode_rewards.png}
+	\caption{Recompensa por episodio para algoritmo de Monte Carlo ES, suavizado con una media móvil de 100 episodios.}
+	\label{fig:monte_carlo_episode_rewards}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{./Figures/monte_carlo_success_rate.png}
+	\caption{Curva de éxito (porcentaje de juegos ganados en los últimos 100 episodios) para algoritmo de Monte Carlo ES.}
+	\label{fig:monte_carlo_success_rate}
+\end{figure}
+
+Al jugar en contra del modelo, se observa que se obtuvo un modelo capaz de identificar las estrategias principales del tres en línea. Por ejemplo, si el modelo comienza el juego, este toma siempre el centro del tablero como se observa en la figura \ref{fig:monte_carlo_center}. También, si tiene posibilidad de ganar, toma la posición ganadora; o por el contrario, si el contrincante tiene posibilidad de ganar, intenta bloquear esa posibilidad, como se observa en las figuras \ref{fig:monte_carlo_win} y \ref{fig:monte_carlo_block}.
+
+\clearpage
 
 \begin{figure}[htbp]
 	\centering
@@ -103,14 +147,14 @@ Luego de entrenar el agente Monte Carlo ES durante 500.000 episodios se obtuvo u
 	\label{fig:monte_carlo_win}
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure}[hbt!]
 	\centering
 	\includegraphics[width=0.25\textwidth]{./Figures/monte_carlo_block.png}
 	\caption{Agente bloqueando la posición ganadora del humano.}
 	\label{fig:monte_carlo_block}
 \end{figure}
 
-Lo sorprendente es que el agente también aprende estrategias avanzadas, Por ejemplo, si teniendo tomado el centro el usuario elije posición 1, 3, 5 o 7, la victoria esta asegurada con el patrón de la figura \ref{fig:monte_carlo_advanced}. A la vez, si el jugador intenta ejecutar la misma estrategia sobre el agente, este la evita eligiendo las esquinas como su primer movimiento.
+Lo sorprendente es que el modelo también aprende estrategias avanzadas, Por ejemplo, si teniendo tomado el centro el usuario elige posición 1, 3, 5 o 7, la victoria esta asegurada con el patrón de la figura \ref{fig:monte_carlo_advanced}. A la vez, si el jugador humano intenta ejecutar la misma estrategia, el agente de Monte Carlo ES la evita eligiendo las esquinas como su primer movimiento.
 
 \begin{figure}[htbp]
 	\centering
@@ -128,10 +172,38 @@ Como contrapartida el agente no es perfecto, cuando se intenta ejecutar sobre el
 	\label{fig:monte_carlo_exception}
 \end{figure}
 
-\section{Futura mejoras}
+\subsection{Q-Learning}
 
-Como futura mejora se plantea crear una clase \textit{Trainer} que agregue visualizaciones de métricas útiles durante el entrenamiento como el valor Q medio de todos los estados cada cierto número de episodios, o la cantidad de victorias, pérdidas y empates logrados en los últimos 100 episodios.
+Luego de entrenar el agente Q-Learning se obtuvo la curva de recompensa de la figura \ref{fig:q_learning_episode_rewards}  y la curva de éxito de la figura \ref{fig:q_learning_success_rate}.
+
+\clearpage
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{./Figures/q_learning_episode_rewards.png}
+	\caption{Recompensa por episodio para algoritmo de Q-Learning, suavizado con una media móvil de 100 episodios.}
+	\label{fig:q_learning_episode_rewards}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{./Figures/q_learning_success_rate.png}
+	\caption{Curva de éxito (porcentaje de juegos ganados en los últimos 100 episodios) para algoritmo de Q-Learning.}
+	\label{fig:q_learning_success_rate}
+\end{figure}
+
+En primer lugar se observa que el entrenamiento también converge y rápidamente, con solo 100.000 episodios el modelo ya estaría entrenado. Luego se observa que los valores de recompensa y de tasa de éxito alcanzados son mayores respecto al modelo anterior, aunque esto no es indicativo de mayor calidad ya que Monte Carlo ES requiere de inicios aleatorios que pueden llevar a estados que terminan siempre en jugadas perdedoras o empate.
+
+Al jugar en contra del modelo, se obtienen los mismos resultados que en el modelo anterior, se observa que se aprenden estrategias básicas y también avanzadas. A diferencia del anterior, el modelo de Q-Learning parece ser mas consistente en sus resultados, teniendo menos situaciones donde elige posiciones ya tomadas.
 
 \section{Conclusiones}
 
-El algoritmo mostró resultados muy buenos en el desafío planteado, no solamente aprendiendo los movimientos básicos, sino también aprendiendo estrategias avanzadas lo cual es inesperado dada la sencillez del algoritmo. Como puntos débiles, aún en un juego simple como el tres en línea, se deben mantener estructuras para todos los estados posibles del tablero (que en este caso es del orden de los miles) lo que requiere de un entrenamiento de muchos episodios (en el orden del millón), haciéndolo lento. Otro punto débil del algoritmo es que debido que el algoritmo no puede ``extrapolar`` conocimiento, es decir aprovechar lo aprendido para un estado para resolver estados similares.
+Ambos algoritmos mostraron resultados muy buenos en el desafío planteado, no solamente aprendiendo los movimientos básicos, sino también aprendiendo estrategias avanzadas lo cual fue inesperado. 
+
+Comparando, Q-Learning mostró un mejor desempeño con una convergencia en menor cantidad de episodios de entrenamiento, gracias a su aprendizaje off-policy y al algoritmo de exploración \(\epsilon\)-greedy. Monte Carlo ES, al aprender solo en base a la política ejecutada y requerir de comienzos aleatorios para la exploración demora una mayor cantidad de episodios en explorar todos los pares estado-acción posibles. Más aún, los comienzos exploratorios de Monte Carlo ES agregan complejidad a la implementación, ya que requiere de código adicional que permita fijar el ambiente en un estado inicial determinado. 
+
+Como puntos débiles de ambos algoritmos, aún en un juego simple como el tres en línea, se deben mantener estructuras (como la tabla Q) para todos los estados posibles del tablero, que en este caso es del orden de los miles, lo que implica un costo computacional moderado. Otro punto débil de ambos algoritmos es que no pueden ``extrapolar`` conocimiento, es decir aprovechar lo aprendido para un estado para resolver estados similares, que en este caso sería una cualidad deseable ya que el tres en línea es un juego simétrico si se rota el tablero.
+
+\section{Trabajo futuro}
+
+Como trabajo futuro se plantea enfrentar ambos algoritmos en un entrenamiento a la par, para observar el comportamiento. Lo esperable sería que el modelo de Q-Learning comience ganando el mayor porcentaje de partidas y que, luego de muchos episodios, la mayoría de las partidas terminen en empate.

@@ -2,9 +2,9 @@ import random
 
 import matplotlib.pyplot as plt
 
-from .utils import pos_to_xy, xy_to_pos, board_to_index
 from .board import Board
 from .players import Player
+from .utils import pos_to_xy, xy_to_pos, board_to_index
 
 
 class QLearning(Player):
@@ -66,11 +66,11 @@ class QLearning(Player):
         if not self.train:
             next_step = max(self.q_values[index], key=self.q_values[index].get)
         else:
-            # Check if Q-values are initialized for the current state
             if index not in self.q_values:
+                # Check if Q-values are initialized for the current state
                 self.q_values[index] = {i: 0 for i in range(9)}
-            # Check if we are over the limit of turns
             if self.n_steps >= 20:
+                # Check if we are over the limit of turns
                 self.train_results.append('I')
                 reward = -50
                 self.episode_reward += reward
@@ -92,12 +92,7 @@ class QLearning(Player):
                 next_step = xy_to_pos(next_step_x, next_step_y)
             else:
                 # Exploit: choose the best action based on Q-values
-                if index not in self.q_values:
-                    empty_spot = board.get_empty_spots()
-                    next_step_x, next_step_y = empty_spot.pop(random.randrange(len(empty_spot)))
-                    next_step = xy_to_pos(next_step_x, next_step_y)
-                else:
-                    next_step = max(self.q_values[index], key=self.q_values[index].get)
+                next_step = max(self.q_values[index], key=self.q_values[index].get)
             self.last_state = index
             self.last_action = next_step
             self.n_steps += 1

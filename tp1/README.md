@@ -2,7 +2,10 @@
 
 ## Description
 
-In this TP, students are required to solve a problem using Monte Carlo. My implementation is based on Tic Tac Toe game.
+In this TP, students are required to solve a problem using any of the RL algorithms studied in class, more details on
+[document](resources/enunciado.pdf). In my solution, I've solved a Tic Tac Toe game bot using both Monte Carlo ES and
+Q-Learning, and then I've compared the results. A [report](resources/TP1_RL1_Maximiliano_Torti.pdf) with the analysis
+and conclusions of the work done is available.
 
 ## Requirements
 
@@ -27,20 +30,33 @@ In this TP, students are required to solve a problem using Monte Carlo. My imple
 To start the game, run the following command:
 
 ```sh
-python src/main.py play --games=<number_of_games> [--bot] [--monte_carlo=<model_file>] [--human]
+python src/main.py play --games=<number_of_games> [--bot] [--model-file=<model-file>] [--human]
 ```
 
-The game starts between two of the three options: human player, a bot and a Monte Carlo model. The human player can
-enter the position where they want to place their symbol. The bot selects a random position on the board and the Monte
-Carlo model plays according to the strategies it learnt. The game continues until there is a winner or the board is
+The game starts between two of the three options: human player, a bot and a trained model. The human player can
+enter the position where they want to place their symbol. The bot selects a random position on the board and the trained
+model plays according to the strategies it learnt. The game continues until there is a winner or the board is
 full. Multiple consecutive games can be played using the `--games` option.
 
-## Training the Monte Carlo Model
+## Training a Model
 
-To train the Monte Carlo model, run the following command:
+To train a model, run the following command:
 
 ```sh
-python src/main.py train --episodes=<number_of_episodes>
+python src/main.py train --model=<model_type> --episodes=<number_of_episodes>
+```
+
+The model can be either `q-learning` or `monte-carlo`. The training process will run for the specified number of
+episodes, and the model will be saved to a file.
+
+Already trained models are available in the `resources` folder. To play against them, run the following commands:
+
+```sh
+python src/main.py play --games=5 --model-file=resources/monte-carlo.pkl
+```
+
+```sh
+python src/main.py play --games=5 --model-file=resources/q-learning.pkl
 ```
 
 ## Running Tests
@@ -62,5 +78,5 @@ coverage report
 
 ## Code Quality
 
-No vulnerabilities or code smells were detected by SonarQube analysis.
+All code contains documentation. No vulnerabilities or code smells were detected by SonarQube analysis.
 

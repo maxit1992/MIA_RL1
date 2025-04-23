@@ -21,24 +21,32 @@ $ python src/main.py play --games=<number_of_games> --bot
 \end{verbatim}
 
 \begin{itemize}
-    \item Jugar un humano contra el agente de Monte Carlo.
+    \item Jugar un humano contra un modelo.
 \end{itemize}
 \begin{verbatim}
 $ python src/main.py play --games=<number_of_games> \
-    --monte_carlo=<model_file>
+    --model-file=<model-file>
 \end{verbatim}
-
 
 \begin{itemize}
     \item Entrenar un nuevo agente de Monte Carlo.
 \end{itemize}
 \begin{verbatim}
-$ python src/main.py train --episodes=<number_of_episodes>
+$ python src/main.py train --model=monte-carlo \
+    --episodes=<number_of_episodes>
+\end{verbatim}
+
+\begin{itemize}
+    \item Entrenar un nuevo agente de Q-Learning.
+\end{itemize}
+\begin{verbatim}
+$ python src/main.py train --model=q-learning \
+    --episodes=<number_of_episodes>
 \end{verbatim}
 
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=\textwidth]{./Figures/command.png}
 	\caption{Uso del script principal por línea de comando.}
-	\label{fig:coverage}
+	\label{fig:command}
 \end{figure}
